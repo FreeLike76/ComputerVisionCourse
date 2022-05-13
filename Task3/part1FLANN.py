@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 
-FPS_LIM = 30
-MIN_GOOD_MATHCES = 20
+FPS_LIM = 60
+MIN_GOOD_MATHCES = 10
 
 marker = cv2.imread("Task3/data/marker.jpg", cv2.IMREAD_GRAYSCALE)
 video = cv2.VideoCapture("Task3/data/find_chocolate.mp4")
@@ -15,7 +15,7 @@ index_params = dict(
     key_size = 20,
     multi_probe_level = 2)
 
-search_params = dict(checks=50)
+search_params = dict(checks=100)
 
 flann = cv2.FlannBasedMatcher(index_params, search_params)
 
@@ -31,6 +31,8 @@ border = np.float32([
 
 while(video.isOpened()):
     ret, frame = video.read()
+    if not ret: break
+
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     
     # find key points
@@ -42,7 +44,7 @@ while(video.isOpened()):
     good_matches = []
     try:
         for m, n in matches:
-            if m.distance < 0.7 * n.distance:
+            if m.distance < 0.6 * n.distance:
                 good_matches.append(m)
     except:
         pass
