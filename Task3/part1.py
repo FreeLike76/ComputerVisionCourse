@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-# CONFIGUREs
+# CONFIGURES
 FPS_LIM = 60
 MIN_MATCHES = 120
 DRAW_PREV_IF_FAIL = True
@@ -56,8 +56,8 @@ while(True):
             frame = cv2.polylines(frame, [transformed_border], True, (255, 255, 255), 2, cv2.LINE_AA)
     else:
         # find homography
-        src_pts  = np.array([kp1[m.queryIdx].pt for m in matches], dtype=np.float32).reshape(-1, 1, 2)
-        dst_pts  = np.array([kp2[m.trainIdx].pt for m in matches], dtype=np.float32).reshape(-1, 1, 2)
+        src_pts = np.array([kp1[m.queryIdx].pt for m in matches], dtype=np.float32).reshape(-1, 1, 2)
+        dst_pts = np.array([kp2[m.trainIdx].pt for m in matches], dtype=np.float32).reshape(-1, 1, 2)
         M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
 
         # apply transform to border box
