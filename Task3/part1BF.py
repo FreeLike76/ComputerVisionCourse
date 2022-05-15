@@ -1,19 +1,29 @@
 import cv2
 import numpy as np
 
+# CONFIGUREs
 FPS_LIM = 60
 MIN_MATCHES = 120
 DRAW_PREV_IF_FAIL = True
 
+SAVE_RESULT = False
+RESULT_FPS = 30
+
+# read image, capture video
 marker = cv2.imread("Task3/data/marker.jpg", cv2.IMREAD_GRAYSCALE)
 video = cv2.VideoCapture("Task3/data/find_chocolate.mp4")
+if not video.isOpened():
+    print("Error: unable to open video!")
+    exit(0)
 
-orb = cv2.ORB_create(WTA_K=3, nlevels=14)
+# ORB & Brute-Force Matcher
+orb = cv2.ORB_create(WTA_K=3, nlevels=18)
 bf = cv2.BFMatcher(cv2.NORM_HAMMING2, crossCheck=True)
 
 kp1, des1 = orb.detectAndCompute(marker, None)
 
-# points on marker
+# def marker borders
+transformed_border = None
 border = np.float32([
     [0, 0],
     [0, marker.shape[0] - 1],
@@ -21,9 +31,14 @@ border = np.float32([
     [marker.shape[1] - 1, 0]
     ]).reshape(-1, 1, 2)
 
-while(video.isOpened()):
+if SAVE_RESULT:
+    result = cv2.VideoWriter("Task3/result/result1.mp4", -1,
+    RESULT_FPS, (int(video.get(cv2.CAP_PROP_FRAME_WIDTH)), int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))))
+
+while(True):
     ret, frame = video.read()
-    if not ret: break
+    if not ret:
+        break
 
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -50,7 +65,9 @@ while(video.isOpened()):
 
         # draw tracker
         frame = cv2.polylines(frame, [transformed_border], True, (255, 255, 255), 2, cv2.LINE_AA)
-    
+    # save
+    if SAVE_RESULT:
+        result.write(frame)
     # display
     matching_result = cv2.drawMatches(marker, kp1, frame, kp2, matches, None)
     cv2.imshow("Display", matching_result)

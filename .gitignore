@@ -1,6 +1,7 @@
 */data/*
-*/*.html
-*/*.zip
 Task2/infer
 Task2/models
 
+*.html
+*.zip
+*.mp4
