@@ -4,7 +4,7 @@ import numpy as np
 
 # CONFIGURES
 FPS_LIM = 60
-UPDATE_IF_LESS_THAN = 50
+UPDATE_IF_LESS_THAN = 6
 
 SAVE_RESULT = False
 RESULT_FPS = 30
@@ -12,11 +12,12 @@ RESULT_FPS = 30
 
 # FUNCTIONS
 def get_points_to_track(frame):
+    print("Updating with ORB")
     kp1, des1 = orb.detectAndCompute(marker, None)
     kp2, des2 = orb.detectAndCompute(frame, None)
     # Find matches
     matches = bf.match(des1, des2)
-    matches = sorted(matches, key=lambda x: x.distance)[:100]
+    matches = sorted(matches, key=lambda x: x.distance)[:50]
     # Points to track
     src_pts = np.array([kp1[m.queryIdx].pt for m in matches], dtype=np.float32).reshape(-1, 1, 2)
     dst_pts = np.array([kp2[m.trainIdx].pt for m in matches], dtype=np.float32).reshape(-1, 1, 2)
@@ -51,7 +52,7 @@ src, dst = get_points_to_track(old_gray)
 
 # Parameters for lucas kanade optical flow
 lk_params = dict(
-    winSize = (31, 31),
+    winSize = (11, 11),
     maxLevel = 3,
     criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
 
@@ -78,10 +79,14 @@ while(True):
     dst, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, dst, None, **lk_params)
     
     # Select good points, save to T-1
+    n = dst.shape[0]
     old_gray = frame_gray.copy()
     dst = dst[st==1].reshape(-1, 1, 2)
     src = src[st==1].reshape(-1, 1, 2)
-    print(src.shape[0])
+    n -= dst.shape[0]
+    if n != 0:
+        print("Lost:", n) 
+        
 
     # Get new points if need
     if dst.shape[0] < UPDATE_IF_LESS_THAN:
